@@ -7,7 +7,7 @@ interface IUser {
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-  email: String,
+  email: { type: String, required: true, unique: true },
   password: String,
   noteCount: Number,
 });
