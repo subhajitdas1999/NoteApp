@@ -1,15 +1,34 @@
-import mongoose from "mongoose";
-
+import mongoose, { Document } from "mongoose";
+import * as bcrypt from "bcrypt";
 interface IUser {
   email: string;
   password: string;
   noteCount: number;
+  // Add the instance method signature directly in the IUser interface
+  checkPassword: (inputPassword: string) => Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
   email: { type: String, required: true, unique: true },
-  password: String,
-  noteCount: Number,
+  password: { type: String, required: true, select: false },
+  noteCount: { type: Number, default: 0 },
 });
-const User = mongoose.model("User", userSchema);
+
+//this middlewares and methods needs to defined before User model is defined
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 2);
+  }
+  next();
+});
+
+userSchema.methods.checkPassword = async function (
+  this: IUser,
+  inputPassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(inputPassword, this.password);
+};
+
+const User = mongoose.model<IUser>("User", userSchema);
+
 export default User;
