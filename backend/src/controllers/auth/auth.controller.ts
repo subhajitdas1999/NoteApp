@@ -1,4 +1,4 @@
-import User from "@models/userModel";
+import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
 import { logInInput, signUpInput } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
