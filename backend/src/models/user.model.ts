@@ -1,6 +1,7 @@
 import mongoose, { Document } from "mongoose";
 import * as bcrypt from "bcrypt";
-interface IUser {
+export interface IUser {
+  _id: mongoose.Types.ObjectId;
   email: string;
   password: string;
   noteCount: number;

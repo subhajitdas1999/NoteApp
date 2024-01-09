@@ -1,5 +1,5 @@
+import mongoose from "mongoose";
+
 export interface IUserData {
-  email: string;
-  password: string;
-  noteCount: number;
+  _id: mongoose.Types.ObjectId;
 }

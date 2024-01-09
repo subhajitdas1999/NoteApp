@@ -1,16 +1,26 @@
 import mongoose from "mongoose";
+import { IUser } from "./user.model";
 
 interface INotes {
   title: string;
   description: string;
-  createdAt: Date;
+  user: IUser;
 }
 
-const notesSchema = new mongoose.Schema<INotes>({
-  title: { type: String },
-  description: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now() },
-});
+const notesSchema = new mongoose.Schema<INotes>(
+  {
+    title: { type: String },
+    description: { type: String, required: true },
+    user: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    timestamps: true, // Enable automatic timestamp management.Mongoose's built-in timestamps option. This option automatically adds createdAt and updatedAt fields to your schema and manages them for you.
+  }
+);
 
 const Notes = mongoose.model<INotes>("Notes", notesSchema);
 export default Notes;

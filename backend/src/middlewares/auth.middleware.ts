@@ -1,4 +1,4 @@
-import User from "@models/userModel";
+import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
@@ -40,7 +40,7 @@ export const authGuard = catchAsync(
         );
       }
 
-      req.user = user;
+      req.user = user._id;
       //   console.log("here", req.user);
     } else {
       return next(
