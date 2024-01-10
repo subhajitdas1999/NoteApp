@@ -15,11 +15,7 @@ export const createNotesInput = z.object({
   description: z.string().min(1),
 });
 
-export const updateNotesInput = z
-  .object({
-    title: z.string().min(1).nullable(),
-    description: z.string().min(1).nullable(),
-  })
-  .refine((data) => data.title !== null || data.description !== null, {
-    message: "Either title or description must be non-null",
-  });
+export const updateNotesInput = z.object({
+  title: z.optional(z.string()),
+  description: z.optional(z.string()),
+});
