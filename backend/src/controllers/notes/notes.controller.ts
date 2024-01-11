@@ -3,6 +3,7 @@ import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
 import {
   createNotesInput,
+  searchNoteQuery,
   updateNotesInput,
 } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
@@ -22,6 +23,34 @@ export const getNote = catchAsync(
     const { id } = req.params;
     const note = await Notes.findById(id);
     res.status(HttpStatusCode.OK).json({ note });
+  }
+);
+
+export const searchNote = catchAsync(
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    const parsedQuery = searchNoteQuery.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new BaseError(
+        HttpStatusCode.UNPROCESSABLE_ENTITY,
+        "Invalid Input",
+        "Not valid input"
+      );
+    }
+    let { query, page, limit } = parsedQuery.data;
+
+    if (!page) {
+      page = 1;
+    }
+    if (!limit) {
+      limit = 10;
+    }
+
+    const notes = await Notes.find({ $text: { $search: query as string } })
+      .skip(page * limit)
+      .limit(limit);
+    console.log(notes);
+
+    res.status(HttpStatusCode.OK).json({ total: notes.length, notes });
   }
 );
 
@@ -110,3 +139,8 @@ export const deleteNote = catchAsync(
       .json({ message: "message deleted successfully" });
   }
 );
+
+function parseNumber(value: any): number {
+  const parsedValue = parseInt(value, 10);
+  return parsedValue;
+}

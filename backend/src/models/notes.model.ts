@@ -22,5 +22,7 @@ const notesSchema = new mongoose.Schema<INotes>(
   }
 );
 
+notesSchema.index({ title: "text", description: "text" });
+
 const Notes = mongoose.model<INotes>("Notes", notesSchema);
 export default Notes;

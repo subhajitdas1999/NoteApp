@@ -19,3 +19,19 @@ export const updateNotesInput = z.object({
   title: z.optional(z.string()),
   description: z.optional(z.string()),
 });
+
+export const searchNoteQuery = z.object({
+  query: z.string().min(1),
+  page: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val !== undefined && !isNaN(parseInt(val)) ? parseInt(val) : undefined
+    ),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val !== undefined && !isNaN(parseInt(val)) ? parseInt(val) : undefined
+    ),
+});
