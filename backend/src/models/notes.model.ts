@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { IUser } from "./user.model";
 
-interface INotes {
+export interface INotes {
   title: string;
   description: string;
   user: IUser;
@@ -15,6 +15,7 @@ const notesSchema = new mongoose.Schema<INotes>(
       type: mongoose.Types.ObjectId,
       ref: "User",
       required: true,
+      select: false,
     },
   },
   {
@@ -22,6 +23,7 @@ const notesSchema = new mongoose.Schema<INotes>(
   }
 );
 
+//this is to enable search functionality
 notesSchema.index({ title: "text", description: "text" });
 
 const Notes = mongoose.model<INotes>("Notes", notesSchema);

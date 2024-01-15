@@ -35,3 +35,7 @@ export const searchNoteQuery = z.object({
       val !== undefined && !isNaN(parseInt(val)) ? parseInt(val) : undefined
     ),
 });
+
+export const shareNoteInput = z.object({
+  email: z.string().email(),
+});

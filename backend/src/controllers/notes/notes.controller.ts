@@ -1,20 +1,33 @@
 import Notes from "@models/notes.model";
+import NotesShare from "@models/notesShare.model";
 import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
 import {
   createNotesInput,
   searchNoteQuery,
+  shareNoteInput,
   updateNotesInput,
 } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 interface RequestWithUser extends Request {
   user?: IUserData;
 }
 export const getNotes = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const notes = await Notes.find({ user: req.user?._id });
-    res.status(HttpStatusCode.OK).json({ total: notes.length, notes });
+    const sharedNotes = await NotesShare.find({
+      sharedWith: req.user?._id,
+    })
+      .select(["note", "readonly"])
+      .populate("note");
+    res.status(HttpStatusCode.OK).json({
+      total: notes.length,
+      notes,
+      sharedNotesLength: sharedNotes.length,
+      sharedNotes,
+    });
   }
 );
 
@@ -140,7 +153,68 @@ export const deleteNote = catchAsync(
   }
 );
 
-function parseNumber(value: any): number {
-  const parsedValue = parseInt(value, 10);
-  return parsedValue;
-}
+export const shareNote = catchAsync(
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    const parsedBody = shareNoteInput.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new BaseError(
+        HttpStatusCode.UNPROCESSABLE_ENTITY,
+        "Invalid Input",
+        "Not valid input"
+      );
+    }
+    const { id } = req.params;
+    const shareNote = await Notes.findById(id).select(["_id", "user", "title"]);
+    if (!shareNote) {
+      throw new BaseError(
+        HttpStatusCode.NOT_FOUND,
+        "NOT_FOUND",
+        "Notes Not found"
+      );
+    }
+
+    if (!shareNote.user._id.equals(req.user?._id)) {
+      throw new BaseError(
+        HttpStatusCode.NOT_ACCEPTABLE,
+        "NOT_ACCEPTABLE",
+        "Can only share own notes"
+      );
+    }
+
+    const shareWith = await User.findOne({
+      email: parsedBody.data.email,
+    }).select("_id");
+
+    if (!shareWith) {
+      throw new BaseError(
+        HttpStatusCode.NOT_FOUND,
+        "NOT_FOUND",
+        "User Not found, check email"
+      );
+    }
+
+    if (shareWith._id.equals(req.user?._id)) {
+      throw new BaseError(
+        HttpStatusCode.NOT_ACCEPTABLE,
+        "NOT_ACCEPTABLE",
+        "Can Not share own Notes"
+      );
+    }
+
+    const ifDataExists = await NotesShare.findOne({
+      sharedWith: shareWith._id,
+      note: shareNote._id,
+    });
+    if (ifDataExists) {
+      throw new BaseError(HttpStatusCode.FOUND, "FOUND", "Already shared");
+    }
+
+    await NotesShare.create({
+      sharedWith: shareWith._id,
+      note: shareNote._id,
+    });
+    res.status(HttpStatusCode.OK).json({
+      message: `Notes with title **${shareNote.title}** shared with ${parsedBody.data.email}`,
+    });
+  }
+);

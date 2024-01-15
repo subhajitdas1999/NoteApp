@@ -9,11 +9,16 @@ export interface IUser {
   checkPassword: (inputPassword: string) => Promise<boolean>;
 }
 
-const userSchema = new mongoose.Schema<IUser>({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true, select: false },
-  noteCount: { type: Number, default: 0 },
-});
+const userSchema = new mongoose.Schema<IUser>(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true, select: false },
+    noteCount: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 //this middlewares and methods needs to defined before User model is defined
 userSchema.pre("save", async function (next) {
