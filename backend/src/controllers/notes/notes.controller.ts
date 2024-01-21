@@ -1,7 +1,15 @@
-import Notes from "@models/notes.model";
-import NotesShare from "@models/notesShare.model";
-import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
+import {
+  createANote,
+  createASharedNote,
+  deleteANote,
+  findANoteById,
+  findASharedNoteByUserAndNoteId,
+  findAllNotes,
+  findSharedNotesByUser,
+  searchNotes,
+} from "@services/notes.service";
+import { findUserAndUpdate, findUserByEmail } from "@services/user.service";
 import {
   createNotesInput,
   searchNoteQuery,
@@ -10,18 +18,16 @@ import {
 } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
-import mongoose from "mongoose";
 interface RequestWithUser extends Request {
   user?: IUserData;
 }
 export const getNotes = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    const notes = await Notes.find({ user: req.user?._id });
-    const sharedNotes = await NotesShare.find({
-      sharedWith: req.user?._id,
-    })
-      .select(["note", "readonly"])
-      .populate("note");
+    const notes = await findAllNotes({ user: req.user?._id });
+    const sharedNotes = await findSharedNotesByUser(req.user?._id, [
+      "note",
+      "readonly",
+    ]);
     res.status(HttpStatusCode.OK).json({
       total: notes.length,
       notes,
@@ -34,7 +40,7 @@ export const getNotes = catchAsync(
 export const getNote = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const note = await Notes.findById(id);
+    const note = await findANoteById(id);
     res.status(HttpStatusCode.OK).json({ note });
   }
 );
@@ -49,19 +55,12 @@ export const searchNote = catchAsync(
         "Not valid input"
       );
     }
-    let { query, page, limit } = parsedQuery.data;
-
-    if (!page) {
-      page = 1;
-    }
-    if (!limit) {
-      limit = 10;
-    }
-
-    const notes = await Notes.find({ $text: { $search: query as string } })
-      .skip(page * limit)
-      .limit(limit);
-    console.log(notes);
+    let { searchText, page, limit } = parsedQuery.data;
+    const query = {
+      user: req.user?._id,
+      $text: { $search: searchText },
+    };
+    const notes = await searchNotes(query, page, limit);
 
     res.status(HttpStatusCode.OK).json({ total: notes.length, notes });
   }
@@ -77,17 +76,13 @@ export const createNote = catchAsync(
         "Not valid input"
       );
     }
-
-    const user = await User.findOneAndUpdate(
+    const user = await findUserAndUpdate(
       { _id: req.user?._id },
       { $inc: { noteCount: 1 } },
-      { new: true }
+      true
     );
 
-    const note = await Notes.create({
-      ...parsedBody.data,
-      user,
-    });
+    const note = await createANote(parsedBody.data, user?._id);
 
     // Excluding User Data in the Response
     const { user: userData, ...noteWithoutUser } = note.toObject();
@@ -114,10 +109,10 @@ export const UpdateNote = catchAsync(
     }
     const { id } = req.params;
 
-    const updatedNote = await Notes.findOneAndUpdate(
+    const updatedNote = await findUserAndUpdate(
       { _id: id },
       { ...parsedBody.data },
-      { new: true }
+      true
     );
 
     if (!updatedNote) {
@@ -136,16 +131,7 @@ export const deleteNote = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
-    const note = await Notes.findById(id);
-    if (!note) {
-      throw new BaseError(
-        HttpStatusCode.NOT_FOUND,
-        "NOT_FOUND",
-        "Note Not found"
-      );
-    }
-
-    await Notes.deleteOne({ _id: id });
+    await deleteANote(id);
 
     res
       .status(HttpStatusCode.OK)
@@ -164,7 +150,7 @@ export const shareNote = catchAsync(
       );
     }
     const { id } = req.params;
-    const shareNote = await Notes.findById(id).select(["_id", "user", "title"]);
+    const shareNote = await findANoteById(id, ["_id", "user", "title"]);
     if (!shareNote) {
       throw new BaseError(
         HttpStatusCode.NOT_FOUND,
@@ -180,10 +166,10 @@ export const shareNote = catchAsync(
         "Can only share own notes"
       );
     }
-
-    const shareWith = await User.findOne({
-      email: parsedBody.data.email,
-    }).select("_id");
+    const shareWith = await findUserByEmail(parsedBody.data.email, ["_id"]);
+    // const shareWith = await User.findOne({
+    //   email: parsedBody.data.email,
+    // }).select("_id");
 
     if (!shareWith) {
       throw new BaseError(
@@ -201,18 +187,15 @@ export const shareNote = catchAsync(
       );
     }
 
-    const ifDataExists = await NotesShare.findOne({
-      sharedWith: shareWith._id,
-      note: shareNote._id,
-    });
+    const ifDataExists = await findASharedNoteByUserAndNoteId(
+      shareWith._id,
+      shareNote._id
+    );
     if (ifDataExists) {
       throw new BaseError(HttpStatusCode.FOUND, "FOUND", "Already shared");
     }
 
-    await NotesShare.create({
-      sharedWith: shareWith._id,
-      note: shareNote._id,
-    });
+    await createASharedNote(shareWith._id, shareNote._id);
     res.status(HttpStatusCode.OK).json({
       message: `Notes with title **${shareNote.title}** shared with ${parsedBody.data.email}`,
     });
