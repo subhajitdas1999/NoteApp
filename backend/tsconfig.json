@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
-    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "target": "es2016",
+    "module": "CommonJS",
 
-    /* Modules */
-    "module": "CommonJS" /* Specify what module code is generated. */,
-
-    "baseUrl": "./src" /* Specify the base directory to resolve non-relative module names. */,
+    "baseUrl": "./src",
     "paths": {
       "@controllers/*": ["controllers/*"],
       "@middlewares/*": ["middlewares/*"],
@@ -15,17 +12,13 @@
       "@services/*": ["services/*"],
       "@validators/*": ["validators/*"]
     },
-    /* JavaScript Support */
 
-    "outDir": "./dist" /* Specify an output folder for all emitted files. */,
+    "outDir": "./dist",
 
-    /* Interop Constraints */
+    "esModuleInterop": true,
 
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+    "forceConsistentCasingInFileNames": true,
 
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-
-    /* Type Checking */
-    "strict": true /* Enable all strict type-checking options. */
+    "strict": true
   }
 }
