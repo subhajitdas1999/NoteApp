@@ -1,5 +1,5 @@
-import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
+import { createUser, validateEmailAndPassword } from "@services/user.service";
 import { logInInput, signUpInput } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
@@ -19,7 +19,7 @@ export const signUp = catchAsync(
       );
     }
 
-    const user = await User.create(parsedBody.data);
+    const user = await createUser(parsedBody.data);
 
     res.status(HttpStatusCode.CREATED).json({
       message: "Signup successful",
@@ -39,11 +39,11 @@ export const logIn = catchAsync(
         "Please provide email and password"
       );
     }
-    const user = await User.findOne({ email: parsedBody.data.email }).select(
-      "+password"
+    const { user } = await validateEmailAndPassword(
+      parsedBody.data.email,
+      parsedBody.data.password
     );
-
-    if (!user || !(await user.checkPassword(parsedBody.data.password))) {
+    if (!user) {
       throw new BaseError(
         HttpStatusCode.NOT_FOUND,
         "Not found",
@@ -59,7 +59,7 @@ export const logIn = catchAsync(
   }
 );
 
-const getJwtToken = (id: string): string => {
+export const getJwtToken = (id: string): string => {
   const privateKey = "MY_SECRETE_KEY";
   return jwt.sign({ id }, privateKey, {
     expiresIn: 60 * 60,

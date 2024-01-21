@@ -1,5 +1,6 @@
 import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
+import { findUserById } from "@services/user.service";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
@@ -29,7 +30,7 @@ export const authGuard = catchAsync(
     if (typeof decoded === "object" && decoded !== null && "id" in decoded) {
       // Now TypeScript knows `id` is a property on `decoded`
       const id = decoded.id;
-      const user = await User.findById(id);
+      const user = await findUserById(id);
       if (!user) {
         return next(
           new BaseError(
