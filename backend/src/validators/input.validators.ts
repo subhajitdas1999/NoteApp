@@ -21,7 +21,7 @@ export const updateNotesInput = z.object({
 });
 
 export const searchNoteQuery = z.object({
-  query: z.string().min(1),
+  searchText: z.string().min(1),
   page: z
     .string()
     .optional()
