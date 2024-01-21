@@ -1,3 +1,4 @@
+import User from "@models/user.model";
 import { BaseError, HttpStatusCode, catchAsync } from "@services/error.service";
 import { createUser, validateEmailAndPassword } from "@services/user.service";
 import { logInInput, signUpInput } from "@validators/input.validators";
@@ -76,6 +77,11 @@ export const logOut = catchAsync(
 );
 export const test = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    // const data = await User.findOne({
+    //   email: "bissoujounnefri-1@yopmail.com",
+    // }).select([]);
+    // console.log(data);
+
     res.json({ ok: "ok" });
   }
 );
