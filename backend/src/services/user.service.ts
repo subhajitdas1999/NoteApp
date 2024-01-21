@@ -12,8 +12,11 @@ export const findUserById = async (id: string) => {
   return await User.findById(id);
 };
 
-export const findUserByEmail = async (email: string) => {
-  return await User.findOne({ email });
+export const findUserByEmail = async (
+  email: string,
+  dataFields: string[] = []
+) => {
+  return await User.findOne({ email }).select(dataFields);
 };
 
 export const validateEmailAndPassword = async (
@@ -30,4 +33,12 @@ export const validateEmailAndPassword = async (
   }
 
   return { user };
+};
+
+export const findUserAndUpdate = async (
+  where: any,
+  query: any,
+  isNew: boolean = false
+) => {
+  return await User.findOneAndUpdate(where, query, { new: isNew });
 };
