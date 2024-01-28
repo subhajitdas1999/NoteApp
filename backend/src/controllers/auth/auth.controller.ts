@@ -5,6 +5,8 @@ import { logInInput, signUpInput } from "@validators/input.validators";
 import { IUserData } from "@validators/types.validator";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 interface RequestWithUser extends Request {
   user?: IUserData;
 }
@@ -61,7 +63,7 @@ export const logIn = catchAsync(
 );
 
 export const getJwtToken = (id: string): string => {
-  const privateKey = "MY_SECRETE_KEY";
+  const privateKey = process.env.JWT_SECRET as string;
   return jwt.sign({ id }, privateKey, {
     expiresIn: 60 * 60,
   }); //1hr
