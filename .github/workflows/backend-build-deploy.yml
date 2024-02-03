@@ -45,8 +45,17 @@ jobs:
           echo "scp to server to copy build folder"
           scp -o StrictHostKeyChecking=no -r -i private_key dist/* $USER_NAME@$SSH_HOST:/home/$USER_NAME/NoteApp/backend/dist
 
+
+      - name: deploy ec2 server
+        run: |
           #Now handle all the steps for new code deploy to server
           ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST << 'EOF'
+
+          #set the node environment as I have installed node using nvm
+          #This line sets the NVM_DIR environment variable to point to the directory where NVM is installed. By default, NVM installs itself in the .nvm directory inside your home directory.
+          export NVM_DIR="$HOME/.nvm"
+          # This line sources (or executes) the nvm.sh script located in the NVM_DIR directory. Sourcing this script initializes NVM within the current shell session, making it possible to use the nvm command to switch Node.js versions and ensuring that the correct version of Node.js and npm are accessible.
+          source "$NVM_DIR/nvm.sh"
 
           echo "cd NoteApp/backend"
           cd NoteApp/backend
