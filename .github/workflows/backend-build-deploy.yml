@@ -7,9 +7,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: development
     defaults:
       run:
         working-directory: ./backend
+    env:
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      DB_URL: ${{secrets.DB_URL}}
     steps:
       - name: checkout
         uses: actions/checkout@v4
