@@ -1,0 +1,24 @@
+name: Note App backend build and deploy
+
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: use node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: go to inside backend repo
+        run: cd backend
+      - name: install dependencies
+        run: npm install
+      - name: run tests
+        run: npm test
+      - name: build
+        run: npm run build
