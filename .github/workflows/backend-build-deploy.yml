@@ -49,6 +49,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST << 'EOF'
 
           echo "cd /home/'$USER_NAME'/NoteApp/backend"
+          cd /NoteApp/backend
           pwd
 
           EOF
