@@ -5,7 +5,7 @@ on:
     branches:
       - 'main'
 jobs:
-  test_build__deploy:
+  test_build_deploy:
     runs-on: ubuntu-latest
     environment: development
     defaults:
@@ -36,5 +36,10 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
+
+          # Create the directory on the server
+          ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST "mkdir -p /home/$USER_NAME/NoteApp/backend/dist"
+          
+          # Now copy the files using scp with recursive copy
           scp -o StrictHostKeyChecking=no -r -i private_key dist/* $USER_NAME@$SSH_HOST:/home/$USER_NAME/NoteApp/backend/dist
     
