@@ -38,8 +38,30 @@ jobs:
           chmod 600 private_key
 
           # Create the directory on the server
+          echo "ssh to server to confirm dist folder exist"
           ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST "mkdir -p /home/$USER_NAME/NoteApp/backend/dist"
-          
+
           # Now copy the files using scp with recursive copy
+          echo "scp to server to copy build folder"
           scp -o StrictHostKeyChecking=no -r -i private_key dist/* $USER_NAME@$SSH_HOST:/home/$USER_NAME/NoteApp/backend/dist
+
+          #Now handle all the steps for new code deploy to server
+          ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST << 'EOF'
+
+          echo "cd /home/$USER_NAME/NoteApp/backend"
+          cd /home/$USER_NAME/NoteApp/backend
+
+          echo "git pull origin main"
+          git pull origin main
+
+          echo "npm install --production"
+          npm install --production
+
+          echo "pm2 delete noteApp_BE"
+          pm2 delete noteApp_BE
+
+          echo "pm2 start "npm run start" --name "noteApp_BE""
+          pm2 start "npm run start" --name "noteApp_BE"
+          
+          EOF
     
