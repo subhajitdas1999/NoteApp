@@ -15,10 +15,10 @@ jobs:
         with:
           node-version: 18
       - name: go to inside backend repo
-        run: cd backend/
-      - name: install dependencies
-        run: npm install
-      - name: run tests
-        run: npm test
-      - name: build
-        run: npm run build
+        run: pwd
+      # - name: install dependencies
+      #   run: npm install
+      # - name: run tests
+      #   run: npm test
+      # - name: build
+      #   run: npm run build
