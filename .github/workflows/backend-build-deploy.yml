@@ -49,6 +49,8 @@ jobs:
           node-version: 18
       - name: install dependencies
         run: npm install
+      - name: build
+        run: npm run build
       - name: Archive Production Artifact
         run: tar -czvf build.tar.gz ./dist
       - name: copy dist file to ec2 server
