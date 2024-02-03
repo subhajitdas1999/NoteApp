@@ -17,9 +17,8 @@ jobs:
       - name: go to inside backend repo
         run: pwd
       - name: check directory
+        working-directory: ./backend
         run: ls -al
-      - name: changed path
-        run: cd backend
       - name: check path
         run: pwd
       # - name: install dependencies
