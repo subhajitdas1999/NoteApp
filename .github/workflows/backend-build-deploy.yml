@@ -5,7 +5,7 @@ on:
     branches:
       - 'main'
 jobs:
-  test_build_deploy:
+  test_build:
     runs-on: ubuntu-latest
     environment: development
     defaults:
@@ -14,9 +14,6 @@ jobs:
     env:
       JWT_SECRET: ${{secrets.JWT_SECRET}}
       DB_URL: ${{secrets.DB_URL}}
-      USER_NAME: ${{secrets.USER_NAME}}
-      SSH_HOST: ${{secrets.SSH_HOST}}
-      SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -30,6 +27,28 @@ jobs:
         run: npm test
       - name: build
         run: npm run build
+
+  build_deploy:
+    needs: test_build
+    if: success()
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: ./backend
+    env:
+      USER_NAME: ${{secrets.USER_NAME}}
+      SSH_HOST: ${{secrets.SSH_HOST}}
+      SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: use node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: install dependencies
+        run: npm install
       - name: Archive Production Artifact
         run: tar -czvf build.tar.gz ./dist
       - name: copy dist file to ec2 server
@@ -63,8 +82,8 @@ jobs:
           echo "git pull origin main"
           git pull origin main
 
-          echo "npm install --production"
-          npm install --production
+          echo "npm install --omit=dev"
+          npm install --omit=dev
 
           echo "pm2 delete noteApp_BE"
           pm2 delete noteApp_BE
