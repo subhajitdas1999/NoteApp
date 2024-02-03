@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -14,16 +17,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: go to inside backend repo
-        run: pwd
-      - name: check directory
-        working-directory: ./backend
-        run: ls -al
-      - name: check path
-        run: pwd
-      # - name: install dependencies
-      #   run: npm install
-      # - name: run tests
-      #   run: npm test
-      # - name: build
-      #   run: npm run build
+      - name: install dependencies
+        run: npm install
+      - name: run tests
+        run: npm test
+      - name: build
+        run: npm run build
