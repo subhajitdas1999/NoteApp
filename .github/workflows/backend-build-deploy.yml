@@ -48,8 +48,8 @@ jobs:
           #Now handle all the steps for new code deploy to server
           ssh -o StrictHostKeyChecking=no -i private_key $USER_NAME@$SSH_HOST << 'EOF'
 
-          echo "cd /home/$USER_NAME/NoteApp/backend"
-          cd /home/$USER_NAME/NoteApp/backend
+          echo "cd /home/'$USER_NAME'/NoteApp/backend"
+          cd /home/'$USER_NAME'/NoteApp/backend
 
           echo "git pull origin main"
           git pull origin main
@@ -62,6 +62,6 @@ jobs:
 
           echo "pm2 start "npm run start" --name "noteApp_BE""
           pm2 start "npm run start" --name "noteApp_BE"
-          
+
           EOF
     
