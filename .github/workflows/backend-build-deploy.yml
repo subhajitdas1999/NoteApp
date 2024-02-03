@@ -18,6 +18,10 @@ jobs:
         run: pwd
       - name: check directory
         run: ls -al
+      - name: changed path
+        run: cd backend
+      - name: check path
+        run: pwd
       # - name: install dependencies
       #   run: npm install
       # - name: run tests
