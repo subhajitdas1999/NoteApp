@@ -16,6 +16,8 @@ jobs:
           node-version: 18
       - name: go to inside backend repo
         run: pwd
+      - name: check directory
+        run: ls -al
       # - name: install dependencies
       #   run: npm install
       # - name: run tests
